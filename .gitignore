@@ -1,0 +1,51 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output of the go build command
+/bin/
+/build/
+/dist/
+*.out
+
+# Go workspace file
+go.work
+
+# Go vendor directory
+/vendor/
+
+# Go coverage tool files
+*.coverprofile
+*.cov
+*.cover
+*.test
+
+# Dependency directories (sometimes generated)
+/Godeps/
+
+# IDE/editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Module cache (rarely needed in repo)
+**/pkg/mod/
+
+# Test binary
+*.test
+
+# Env files (optional, if you use them)
+.env
