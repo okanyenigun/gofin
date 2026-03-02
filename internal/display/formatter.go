@@ -24,8 +24,14 @@ func (f *Formatter) PrintCalculationTime(duration time.Duration) {
 }
 
 func (f *Formatter) PrintFirstRows(csvData *data.CSVData, results indicators.Results, config indicators.Config, count int) {
-	fmt.Printf("\nFirst %d rows with RSI (period=%d), Bollinger Bands (period=%d, std=%.1f), and SMAs:\n", count, config.RSIPeriod, config.BBPeriod, config.BBStdDev)
-	fmt.Printf("Datetime, Close, RSI, BB_Upper, BB_Middle, BB_Lower, SMA10, SMA20, SMA50")
+	fmt.Printf("\nFirst %d rows with RSI (period=%d), Bollinger Bands (period=%d, std=%.1f), SMAs, MACD (%d/%d/%d), and Stochastic (%d/%d):\n",
+		count, config.RSIPeriod, config.BBPeriod, config.BBStdDev,
+		config.MACDFastPeriod, config.MACDSlowPeriod, config.MACDSignalPeriod,
+		config.StochPeriod, config.StochSmoothPeriod)
+	fmt.Printf("Datetime, Close, RSI, BB_Upper, BB_Middle, BB_Lower, SMA10, SMA20, SMA50, MACD, MACD_Signal, MACD_Hist, Stoch_K, Stoch_D")
+
+	macdStart := config.MACDSlowPeriod + config.MACDSignalPeriod - 2
+	stochStart := config.StochPeriod + config.StochSmoothPeriod - 2
 
 	for i := 0; i < count && i < len(csvData.Records); i++ {
 		record := csvData.Records[i]
@@ -37,14 +43,24 @@ func (f *Formatter) PrintFirstRows(csvData *data.CSVData, results indicators.Res
 		sma10Str := f.formatValue(results.SMA10, i+config.SMA10Period-1)
 		sma20Str := f.formatValue(results.SMA20, i+config.SMA20Period-1)
 		sma50Str := f.formatValue(results.SMA50, i+config.SMA50Period-1)
+		macdLineStr := f.formatValue(results.MACD.Line, i+macdStart)
+		macdSigStr := f.formatValue(results.MACD.Signal, i+macdStart)
+		macdHistStr := f.formatValue(results.MACD.Histogram, i+macdStart)
+		stochKStr := f.formatValue(results.Stochastic.K, i+stochStart)
+		stochDStr := f.formatValue(results.Stochastic.D, i+stochStart)
 
-		fmt.Printf("%s, %.2f, %s, %s, %s, %s, %s, %s, %s\n", record.Datetime, record.Close, rsiStr, bbUpperStr, bbMiddleStr, bbLowerStr, sma10Str, sma20Str, sma50Str)
+		fmt.Printf("%s, %.2f, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n",
+			record.Datetime, record.Close,
+			rsiStr, bbUpperStr, bbMiddleStr, bbLowerStr,
+			sma10Str, sma20Str, sma50Str,
+			macdLineStr, macdSigStr, macdHistStr,
+			stochKStr, stochDStr)
 	}
 }
 
 func (f *Formatter) PrintLastRows(csvData *data.CSVData, results indicators.Results, analyzer *analysis.Analyzer, count int) {
 	fmt.Printf("\nLast %d values with all indicators:\n", count)
-	fmt.Println("Date, Close, RSI, BB_Upper, BB_Middle, BB_Lower, SMA10, SMA20, SMA50, Trend, RSI_Signal")
+	fmt.Println("Date, Close, RSI, BB_Upper, BB_Middle, BB_Lower, SMA10, SMA20, SMA50, MACD, MACD_Signal, MACD_Hist, Stoch_K, Stoch_D, Trend, RSI_Signal, MACD_Signal, Stoch_Signal")
 
 	start := len(results.RSI) - count
 	if start < 0 {
@@ -56,11 +72,19 @@ func (f *Formatter) PrintLastRows(csvData *data.CSVData, results indicators.Resu
 			record := csvData.Records[i]
 			analysisResult := analyzer.AnalyzePoint(results, i, record.Close)
 
-			fmt.Printf("%s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %s, %s\n",
+			macdLine := results.MACD.Line[i]
+			macdSig := results.MACD.Signal[i]
+			macdHist := results.MACD.Histogram[i]
+			stochK := results.Stochastic.K[i]
+			stochD := results.Stochastic.D[i]
+
+			fmt.Printf("%s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.2f, %.2f, %s, %s, %s, %s\n",
 				record.Datetime, record.Close, results.RSI[i],
 				results.BollingerBands.Upper[i], results.BollingerBands.Middle[i], results.BollingerBands.Lower[i],
 				results.SMA10[i], results.SMA20[i], results.SMA50[i],
-				analysisResult.Trend, analysisResult.RSISignal)
+				macdLine, macdSig, macdHist,
+				stochK, stochD,
+				analysisResult.Trend, analysisResult.RSISignal, analysisResult.MACDSignal, analysisResult.StochasticSignal)
 		}
 	}
 }

@@ -64,10 +64,38 @@ func (a *Analyzer) GetRSISignal(rsi float64) string {
 	return "Neutral"
 }
 
+func (a *Analyzer) GetMACDSignal(macdLine, signal float64) string {
+	if macdLine == 0 && signal == 0 {
+		return "N/A"
+	}
+
+	if macdLine > signal {
+		return "Bullish"
+	} else if macdLine < signal {
+		return "Bearish"
+	}
+	return "Neutral"
+}
+
+func (a *Analyzer) GetStochasticSignal(k float64) string {
+	if k == 0 {
+		return "N/A"
+	}
+
+	if k > 80 {
+		return "Overbought"
+	} else if k < 20 {
+		return "Oversold"
+	}
+	return "Neutral"
+}
+
 type AnalysisResult struct {
 	Trend             TrendType
 	BollingerPosition string
 	RSISignal         string
+	MACDSignal        string
+	StochasticSignal  string
 }
 
 func (a *Analyzer) AnalyzePoint(results indicators.Results, index int, price float64) AnalysisResult {
@@ -76,6 +104,8 @@ func (a *Analyzer) AnalyzePoint(results indicators.Results, index int, price flo
 			Trend:             Unknown,
 			BollingerPosition: "N/A",
 			RSISignal:         "N/A",
+			MACDSignal:        "N/A",
+			StochasticSignal:  "N/A",
 		}
 	}
 
@@ -95,9 +125,25 @@ func (a *Analyzer) AnalyzePoint(results indicators.Results, index int, price flo
 		rsiSignal = "N/A"
 	}
 
+	var macdSignal string
+	if index < len(results.MACD.Line) {
+		macdSignal = a.GetMACDSignal(results.MACD.Line[index], results.MACD.Signal[index])
+	} else {
+		macdSignal = "N/A"
+	}
+
+	var stochSignal string
+	if index < len(results.Stochastic.K) {
+		stochSignal = a.GetStochasticSignal(results.Stochastic.K[index])
+	} else {
+		stochSignal = "N/A"
+	}
+
 	return AnalysisResult{
 		Trend:             trend,
 		BollingerPosition: bollingerPos,
 		RSISignal:         rsiSignal,
+		MACDSignal:        macdSignal,
+		StochasticSignal:  stochSignal,
 	}
 }

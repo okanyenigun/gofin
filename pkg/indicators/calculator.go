@@ -15,7 +15,7 @@ func NewCalculator(config Config) *Calculator {
 	}
 }
 
-func (c *Calculator) CalculateAll(closePrices []float64) (Results, time.Duration) {
+func (c *Calculator) CalculateAll(highs, lows, closePrices []float64) (Results, time.Duration) {
 	start := time.Now()
 
 	var wg sync.WaitGroup
@@ -49,6 +49,18 @@ func (c *Calculator) CalculateAll(closePrices []float64) (Results, time.Duration
 	go func() {
 		defer wg.Done()
 		results.SMA50 = CalculateSMA(closePrices, c.config.SMA50Period)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		results.MACD = CalculateMACD(closePrices, c.config.MACDFastPeriod, c.config.MACDSlowPeriod, c.config.MACDSignalPeriod)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		results.Stochastic = CalculateStochastic(highs, lows, closePrices, c.config.StochPeriod, c.config.StochSmoothPeriod)
 	}()
 
 	wg.Wait()

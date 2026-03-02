@@ -16,12 +16,14 @@ func main() {
 	}
 
 	closePrices := csvData.GetClosePrices()
+	highPrices := csvData.GetHighPrices()
+	lowPrices := csvData.GetLowPrices()
 
 	config := indicators.DefaultConfig()
 
 	calculator := indicators.NewCalculator(config)
 
-	results, duration := calculator.CalculateAll(closePrices)
+	results, duration := calculator.CalculateAll(highPrices, lowPrices, closePrices)
 
 	analyzer := analysis.NewAnalyzer()
 	formatter := display.NewFormatter()

@@ -99,3 +99,19 @@ func (d *CSVData) GetClosePrices() []float64 {
 	}
 	return closePrices
 }
+
+func (d *CSVData) GetHighPrices() []float64 {
+	highPrices := make([]float64, len(d.Records))
+	for i, record := range d.Records {
+		highPrices[i] = record.High
+	}
+	return highPrices
+}
+
+func (d *CSVData) GetLowPrices() []float64 {
+	lowPrices := make([]float64, len(d.Records))
+	for i, record := range d.Records {
+		lowPrices[i] = record.Low
+	}
+	return lowPrices
+}
